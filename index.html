@@ -82,10 +82,12 @@
         <div id="species-view" class="view-container flex-col overflow-y-auto p-6 md:p-8 bg-slate-100">
             <div class="max-w-6xl mx-auto w-full">
                 <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-300 pb-2">Target Species: North Canterbury</h2>
-                    <!-- Fish Card Template (Apply to all species cards) -->
+                
+                <!-- RESTORED MISSING GRID TAG HERE -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
                     <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
                         <div class="h-48 bg-white border-b border-slate-100 w-full overflow-hidden flex items-center justify-center">
-                            <!-- Localized Relative Path -->
                             <img src="./images/troutbrown.jpg" alt="Brown Trout" class="w-full h-full object-contain p-2">
                         </div>
                         <div class="p-4">
@@ -179,7 +181,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> <!-- CLOSES GRID TAG -->
             </div>
         </div>
 
@@ -190,10 +192,8 @@
                 <p class="text-sm text-slate-600 mb-6 border-b border-slate-300 pb-4">Standardized structural configurations for terminal tackle and line-to-line connections.</p>
                 
                 <div class="space-y-6">
-                    <!-- Knot 1: Palomar (Apply to all knot cards) -->
                     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
                         <div class="w-full md:w-1/3 bg-white rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
-                            <!-- Localized Relative Path -->
                             <img src="./images/palomar.jpg" alt="Palomar Knot Diagram" class="w-full h-full object-contain p-2">
                         </div>
                         <div class="w-full md:w-2/3">
@@ -211,7 +211,7 @@
                             </ol>
                         </div>
                     </div>
-                    <!-- Knot 2: Snell -->
+                    
                     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
                         <div class="w-full md:w-1/3 bg-white rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
                             <img src="./images/snell.jpg" alt="Snell Diagram" class="w-full h-full object-contain p-2">
@@ -231,7 +231,7 @@
                             </ol>
                         </div>
                     </div>
-                    <!-- Knot 3: Double Uni -->
+                    
                     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
                         <div class="w-full md:w-1/3 bg-white rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
                             <img src="./images/doubleuni.jpg" alt="Double Uni Diagram" class="w-full h-full object-contain p-2">
@@ -251,7 +251,7 @@
                             </ol>
                         </div>
                     </div>
-                    <!-- Knot 4: Blood Knot -->
+                    
                     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
                         <div class="w-full md:w-1/3 bg-white rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
                             <img src="./images/bloodknot.jpg" alt="Blood Knot Diagram" class="w-full h-full object-contain p-2">
@@ -271,7 +271,7 @@
                             </ol>
                         </div>
                     </div>
-                    <!-- Knot 5: Surgeon's Loop -->
+                    
                     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
                         <div class="w-full md:w-1/3 bg-white rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
                             <img src="./images/surgeonsloop.jpg" alt="Surgeon's Loop Diagram" class="w-full h-full object-contain p-2">
@@ -291,7 +291,7 @@
                             </ol>
                         </div>
                     </div>
-                    <!-- Knot 6: FG Knot -->
+                    
                     <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
                         <div class="w-full md:w-1/3 bg-white rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
                             <img src="./images/fg.jpg" alt="FG Knot Diagram" class="w-full h-full object-contain p-2">
@@ -316,7 +316,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- END APP CONTAINER -->
 
     <script>
         // Data and Map Configuration
