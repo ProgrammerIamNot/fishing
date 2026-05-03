@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rolleston Angling Strategic Map</title>
+    <!-- Tailwind CSS for rapid UI styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS for core mapping engine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; }
+        #app-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* View Management */
+        .view-container { display: none; flex-grow: 1; overflow: hidden; background-color: #f8fafc; }
+        .view-container.active { display: flex; }
+        
+        /* Map Specific */
+        #main-content { flex-direction: row; }
+        #map { flex-grow: 1; z-index: 10; height: 100%; }
+        #sidebar { width: 400px; overflow-y: auto; z-index: 20; box-shadow: -2px 0 5px rgba(0,0,0,0.1); }
+        
+        /* Tab Styling */
+        .tab-btn { transition: all 0.2s ease-in-out; border-bottom: 2px solid transparent; }
+        .tab-btn.active { border-bottom-color: #38bdf8; color: #38bdf8; }
+        
+        /* Map Popups */
+        .leaflet-popup-content-wrapper { border-radius: 0.25rem; }
+        .leaflet-popup-content { margin: 12px; min-width: 280px; }
+        .data-grid { display: grid; grid-template-columns: 100px 1fr; gap: 4px 8px; font-size: 0.875rem; }
+        .data-label { font-weight: 600; color: #475569; text-align: right; }
+        .data-value { color: #0f172a; }
+        
+        .location-row { cursor: pointer; transition: background-color 0.15s ease; border-bottom: 1px solid #e2e8f0; }
+        .location-row:hover { background-color: #f1f5f9; }
+        .location-row.active { background-color: #e0f2fe; border-left: 4px solid #0284c7; }
+
+        @media (max-width: 768px) {
+            #main-content { flex-direction: column; }
+            #sidebar { width: 100%; height: 40%; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
+            #map { height: 60%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans">
+    <div id="app-container">
+        <!-- Header & Navigation -->
+        <header class="bg-slate-900 text-slate-100 flex flex-col shadow-md z-30 shrink-0">
+            <div class="flex items-center justify-between px-6 py-3 border-b border-slate-800">
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">Angling Intelligence: Rolleston Base</h1>
+                    <p class="text-xs text-slate-400 mt-0.5">Strategic reference for distance, regulations, and tactics (2025-26 Season)</p>
+                </div>
+                <div class="hidden sm:flex items-center gap-4 text-sm font-semibold bg-slate-800 px-3 py-1.5 rounded-md border border-slate-700">
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500 border border-slate-900"></span> Open Now</div>
+                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 border border-slate-900"></span> Closed</div>
+                </div>
+            </div>
+            <!-- Tabs -->
+            <nav class="flex px-6 space-x-6 text-sm font-semibold text-slate-400">
+                <button onclick="switchView('main-content', this)" class="tab-btn active py-3 hover:text-slate-200">Strategic Map</button>
+                <button onclick="switchView('species-view', this)" class="tab-btn py-3 hover:text-slate-200">Species ID</button>
+                <button onclick="switchView('knots-view', this)" class="tab-btn py-3 hover:text-slate-200">Tactical Knots</button>
+            </nav>
+        </header>
+        
+        <!-- View 1: Map -->
+        <div id="main-content" class="view-container active">
+            <div id="map"></div>
+            <div id="sidebar" class="bg-white flex flex-col shrink-0">
+                <div class="p-4 bg-slate-100 border-b border-slate-200 sticky top-0 font-semibold text-slate-700 text-sm flex justify-between">
+                    <span>Location Target</span>
+                    <span>Dist.</span>
+                </div>
+                <div id="location-list" class="flex flex-col"></div>
+            </div>
+        </div>
+
+        <!-- View 2: Fish Identification -->
+        <div id="species-view" class="view-container flex-col overflow-y-auto p-6 md:p-8 bg-slate-100">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-300 pb-2">Target Species: North Canterbury</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Fish Card Template -->
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="h-48 bg-slate-200 w-full overflow-hidden flex items-center justify-center">
+                            <!-- Localized Relative Path -->
+                            <img src="./images/brown_trout.jpg" alt="Brown Trout" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-slate-900">Brown Trout</h3>
+                            <p class="text-xs text-slate-500 font-mono italic mb-3">Salmo trutta</p>
+                            <div class="text-sm text-slate-700 space-y-2">
+                                <p><strong>ID Markers:</strong> Golden-brown coloration, distinct dark spots often surrounded by lighter pale halos. No spots on the tail.</p>
+                                <p><strong>NC Habitat:</strong> Highly adaptable. Found in the Selwyn, lower Waimakariri, and most high-country lakes.</p>
+                                <p><strong>Suggested Lures:</strong> Parachute Adams, Rapala F7, Silver Toby, small bead-head nymphs.</p>
+                                <p><strong>Bite Profile:</strong> Aggressive, solid strikes on hardware; highly calculated, subtle sips on surface dries.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="h-48 bg-slate-200 w-full overflow-hidden flex items-center justify-center">
+                            <img src="https://placehold.co/600x400/1e293b/ffffff?text=Rainbow+Trout" alt="Rainbow Trout" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-slate-900">Rainbow Trout</h3>
+                            <p class="text-xs text-slate-500 font-mono italic mb-3">Oncorhynchus mykiss</p>
+                            <div class="text-sm text-slate-700 space-y-2">
+                                <p><strong>ID Markers:</strong> Silvery body with a distinct pink/red lateral stripe. Heavy black spotting on the back and extending fully over the tail.</p>
+                                <p><strong>NC Habitat:</strong> High-country lakes (Lyndon, Coleridge). Prefers colder, highly oxygenated water.</p>
+                                <p><strong>Suggested Lures:</strong> Woolly Buggers, Glo-bugs, Mepps #2/#3 spinners, PowerBait (where permitted).</p>
+                                <p><strong>Bite Profile:</strong> Fast, erratic, high-velocity strikes. Frequently followed by immediate aerial leaps and erratic direction changes.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="h-48 bg-slate-200 w-full overflow-hidden flex items-center justify-center">
+                            <img src="https://placehold.co/600x400/1e293b/ffffff?text=Chinook+Salmon" alt="Chinook Salmon" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-slate-900">Chinook Salmon (King)</h3>
+                            <p class="text-xs text-slate-500 font-mono italic mb-3">Oncorhynchus tshawytscha</p>
+                            <div class="text-sm text-slate-700 space-y-2">
+                                <p><strong>ID Markers:</strong> Silver sides, black gums/mouth lining. Spots on the back and both lobes of the tail fin.</p>
+                                <p><strong>NC Habitat:</strong> Major braided rivers (Rakaia, Waimakariri, Hurunui) during spawning runs (Oct-Apr).</p>
+                                <p><strong>Suggested Lures:</strong> Heavy Zed spinners (12g-22g), Colorado spoons, bright weighted streamers.</p>
+                                <p><strong>Bite Profile:</strong> Territorial/reactionary strike (non-feeding mode in freshwater). Exhibits as a heavy, low-frequency dead weight or solid thump.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="h-48 bg-slate-200 w-full overflow-hidden flex items-center justify-center">
+                            <img src="https://placehold.co/600x400/1e293b/ffffff?text=European+Perch" alt="European Perch" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-slate-900">European Perch</h3>
+                            <p class="text-xs text-slate-500 font-mono italic mb-3">Perca fluviatilis</p>
+                            <div class="text-sm text-slate-700 space-y-2">
+                                <p><strong>ID Markers:</strong> Olive green body with 5-6 dark vertical bars. Distinctive bright orange/red pelvic and anal fins. Two dorsal fins (first is spiky).</p>
+                                <p><strong>NC Habitat:</strong> Slow-moving rivers, wetlands, and lakes (e.g., Lake Forsyth, lower Selwyn).</p>
+                                <p><strong>Suggested Lures:</strong> Micro-jigs, 2-inch soft plastics (curltails), small red-bladed spinners.</p>
+                                <p><strong>Bite Profile:</strong> High-frequency, sharp taps. Schooling behavior means missed strikes are often instantly followed by secondary attacks.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="h-48 bg-slate-200 w-full overflow-hidden flex items-center justify-center">
+                            <img src="https://placehold.co/600x400/1e293b/ffffff?text=Tench" alt="Tench" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-slate-900">Tench</h3>
+                            <p class="text-xs text-slate-500 font-mono italic mb-3">Tinca tinca</p>
+                            <div class="text-sm text-slate-700 space-y-2">
+                                <p><strong>ID Markers:</strong> Olive-green to golden-brown, very tiny scales (slimy feel), rounded fins, and a small barbel at each corner of the mouth.</p>
+                                <p><strong>NC Habitat:</strong> Weed-choked, slow-moving waters and ponds. Active mainly at dawn/dusk.</p>
+                                <p><strong>Suggested Lures:</strong> Lures ineffective. Requires bait (sweetcorn, worms, maggots) on sensitive float rigs.</p>
+                                <p><strong>Bite Profile:</strong> Extremely cautious, low-velocity inspection. Registers as prolonged dipping or lateral sliding of the float before a sustained pull.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="h-48 bg-slate-200 w-full overflow-hidden flex items-center justify-center">
+                            <img src="https://placehold.co/600x400/1e293b/ffffff?text=Kahawai" alt="Kahawai" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-slate-900">Kahawai (Other)</h3>
+                            <p class="text-xs text-slate-500 font-mono italic mb-3">Arripis trutta</p>
+                            <div class="text-sm text-slate-700 space-y-2">
+                                <p><strong>ID Markers:</strong> Torpedo-shaped, silvery body with blue/green mottled spots on the back. Yellowish pectoral fins.</p>
+                                <p><strong>NC Habitat:</strong> River mouths (Waimakariri mouth, Rakaia mouth). Often enters lower tidal reaches of rivers feeding on smelt.</p>
+                                <p><strong>Suggested Lures:</strong> Silver hex wobblers, 3-inch paddle-tail soft plastics, smelt-imitation flies.</p>
+                                <p><strong>Bite Profile:</strong> Violent, high-speed interception. Followed by sustained, high-torque runs and surface thrashing.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 3: Tactical Knots -->
+        <div id="knots-view" class="view-container flex-col overflow-y-auto p-6 md:p-8 bg-slate-100">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Fisherman's Knot Reference</h2>
+                <p class="text-sm text-slate-600 mb-6 border-b border-slate-300 pb-4">Standardized structural configurations for terminal tackle and line-to-line connections.</p>
+                
+                <div class="space-y-6">
+                    <!-- Knot 1: Palomar -->
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3 bg-slate-100 rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
+                            <!-- Localized Relative Path -->
+                            <img src="./images/palomar_diagram.jpg" alt="Palomar Knot Diagram" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-slate-800">Palomar Knot</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-blue-100 text-blue-700 rounded">Terminal Tackle</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4">Exceptionally strong and easy to tie. Best for securing hooks, swivels, or lures to braided line or fluorocarbon.</p>
+                            <ol class="list-decimal list-inside text-sm text-slate-800 space-y-1 ml-1 font-medium">
+                                <li>Double about 6 inches of line and pass the loop through the hook eye.</li>
+                                <li>Tie a loose overhand knot with the doubled line.</li>
+                                <li>Pass the hook, lure, or swivel entirely through the loop.</li>
+                                <li>Moisten the line (crucial for fluorocarbon) and pull both the tag end and main line evenly to tighten.</li>
+                                <li>Trim the tag end.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Knot 2: Snell -->
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3 bg-slate-100 rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
+                            <img src="https://placehold.co/400x300/e2e8f0/475569?text=Snell+Diagram" alt="Snell Diagram" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-slate-800">Fisherman's Snell</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-blue-100 text-blue-700 rounded">Hook Shank</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4">Ties the line directly to the shank of the hook. Provides a straight-line pull and better hook-up ratios for bait fishing.</p>
+                            <ol class="list-decimal list-inside text-sm text-slate-800 space-y-1 ml-1 font-medium">
+                                <li>Pass the tag end through the hook eye towards the point.</li>
+                                <li>Form a loop alongside the hook shank.</li>
+                                <li>Wrap the tag end around both the hook shank and the parallel line inside the loop 5-7 times, moving towards the bend.</li>
+                                <li>Pass the tag end back through the loop created in step 2.</li>
+                                <li>Hold the wraps tightly, pull the main line to snug the knot against the eye.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Knot 3: Double Uni -->
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3 bg-slate-100 rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
+                            <img src="https://placehold.co/400x300/e2e8f0/475569?text=Double+Uni+Diagram" alt="Double Uni Diagram" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-slate-800">Double Uni Knot</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-purple-100 text-purple-700 rounded">Line-to-Line</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4">Highly reliable for joining two lines of differing diameters or materials (e.g., Braid main line to Fluorocarbon leader).</p>
+                            <ol class="list-decimal list-inside text-sm text-slate-800 space-y-1 ml-1 font-medium">
+                                <li>Overlap the ends of the two lines for about 6-8 inches.</li>
+                                <li>Take the tag end of Line A, form a loop, and make 5 wraps through the loop around both lines. Pull tight to form a Uni knot.</li>
+                                <li>Repeat step 2 with the tag end of Line B around Line A.</li>
+                                <li>Moisten both knots.</li>
+                                <li>Pull the standing parts of both main lines in opposite directions to slide the knots together until they jam tightly.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Knot 4: Blood Knot -->
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3 bg-slate-100 rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
+                            <img src="https://placehold.co/400x300/e2e8f0/475569?text=Blood+Knot+Diagram" alt="Blood Knot Diagram" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-slate-800">Blood Knot</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-purple-100 text-purple-700 rounded">Line-to-Line</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4">Best used for joining two lines of relatively equal diameter. Creates a very neat, low-profile connection perfect for fly fishing leaders.</p>
+                            <ol class="list-decimal list-inside text-sm text-slate-800 space-y-1 ml-1 font-medium">
+                                <li>Overlap the ends of the two lines.</li>
+                                <li>Wrap Line A around Line B 5 times, then bring the tag end back and insert it between the two lines at the center point.</li>
+                                <li>Wrap Line B around Line A 5 times in the opposite direction.</li>
+                                <li>Bring the tag end of Line B back through the same center gap, passing in the opposite direction of Line A's tag.</li>
+                                <li>Moisten and pull main lines slowly; the knot will barrel closely together.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Knot 5: Surgeon's Loop -->
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3 bg-slate-100 rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
+                            <img src="https://placehold.co/400x300/e2e8f0/475569?text=Surgeon's+Loop+Diagram" alt="Surgeon's Loop Diagram" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-slate-800">Surgeon's Loop</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-amber-100 text-amber-700 rounded">Loop Creation</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4">A fast, easy way to tie a loop at the end of a line. Often used for loop-to-loop connections for leaders or attaching pre-tied rigs.</p>
+                            <ol class="list-decimal list-inside text-sm text-slate-800 space-y-1 ml-1 font-medium">
+                                <li>Fold over the end of the line to create a double line about 5-6 inches long.</li>
+                                <li>Tie an overhand knot with the doubled line, but do not pull it tight yet.</li>
+                                <li>Pass the loop through the overhand knot a second time (making a double overhand).</li>
+                                <li>Moisten the knot.</li>
+                                <li>Hold the loop and both ends (standing line and tag), then pull tight to seat the knot.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Knot 6: FG Knot -->
+                    <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3 bg-slate-100 rounded flex items-center justify-center border border-slate-200 min-h-[160px] overflow-hidden">
+                            <img src="https://placehold.co/400x300/e2e8f0/475569?text=FG+Knot+Diagram" alt="FG Knot Diagram" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-slate-800">FG Knot</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-purple-100 text-purple-700 rounded">Line-to-Line (Advanced)</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-4">The absolute slimmest and strongest knot for connecting braided main line to heavy fluorocarbon/mono leader. Essential for casting through rod guides.</p>
+                            <ol class="list-decimal list-inside text-sm text-slate-800 space-y-1 ml-1 font-medium">
+                                <li>Apply tension to the braided main line (e.g., using rod tip or teeth).</li>
+                                <li>Lay the heavy leader line across the tensioned braid.</li>
+                                <li>Weave the leader over and under the braid in an alternating figure-8 pattern. Repeat for 20 to 22 wraps.</li>
+                                <li>Pinch the wraps to hold them. Tie a half-hitch with the braid around the leader and main braid to lock it.</li>
+                                <li>Pull hard on the main braid and leader to "bite" the braid into the leader material (it changes color slightly).</li>
+                                <li>Trim the leader tag end close, then finish with 2-3 more alternating half-hitches with the braid.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data and Map Configuration
+        const ROLLESTON_COORDS = [-43.5916856574147, 172.37983222713103];
+        
+        const locations = [
+            { id: "L01", name: "Waimakariri (Lower)", coords: [-43.389211930389784, 172.70507906767597], dist: "45", distRaw: 45, limit: "2 Trout, 2 Salmon/Season", season: "Trout: All Year; Salmon: Oct 1 - Apr 30", fish: "Brown Trout, Salmon, Kahawai", methods: "FS B(Trout only)", lures: "Silver Toby, Smelt Soft Baits, Parsons Glory", times: "Outgoing tide, last hour of daylight" },
+            { id: "L02", name: "Waimakariri (Gorge)", coords: [-43.3606782118654, 172.05135207659885], dist: "45", distRaw: 45, limit: "2 Trout, 2 Salmon/Season", season: "Trout: All Year; Salmon: Oct 1 - Apr 30", fish: "Brown/Rainbow Trout, Salmon", methods: "FS B(Trout only)", lures: "Panther Martin, Mepps #3, Silver Spoons", times: "Early morning, late evening" },
+            { id: "L03", name: "Rakaia (SH1 Bridge)", coords: [-43.7367751810159, 172.0458760875656], dist: "30", distRaw: 30, limit: "2 Trout, 2 Salmon/Season", season: "Trout: All Year; Salmon: Oct 1 - Apr 30", fish: "Brown Trout, Salmon", methods: "FB S(Trout only)", lures: "12g Zed Spinner, Black/Gold Toby", times: "After a flood as the water begins to clear" },
+            { id: "L04", name: "Rakaia (Mouth)", coords: [-43.89999191319464, 172.20078173470594], dist: "55", distRaw: 55, limit: "2 Trout, 2 Salmon/Season", season: "Trout: All Year; Salmon: Oct 1 - Apr 30", fish: "Sea-run Brown Trout, Salmon", methods: "FB S(Trout only)", lures: "Zed Spinner, Hope's Silvery, Whitebait lures", times: "Low tide turn, dawn" },
+            { id: "L05", name: "Selwyn (Glentunnel)", coords: [-43.480611839749066, 171.92545495233406], dist: "45", distRaw: 45, limit: "1 Trout", season: "Oct 1 - Apr 30", fish: "Brown Trout", methods: "FS", lures: "Small Nymphs, Dry Flies (Adams), Mepps #1", times: "Early morning during spring" },
+            { id: "L06", name: "Selwyn (Lower Huts)", coords: [-43.69466920165983, 172.4136522963908], dist: "13", distRaw: 13, limit: "2 Trout", season: "All Year", fish: "Large Brown Trout (Sea-run)", methods: "FSB", lures: "Yellow Rabbit, Black Rabbit, Parsons Glory", times: "Strictly night fishing (after 10 PM)" },
+            { id: "L07", name: "Lake Roto Kohatu", coords: [-43.46137791898079, 172.57813772383847], dist: "27", distRaw: 27, limit: "2 Sportsfish", season: "Apr 1 - Oct 31", fish: "Brown Trout, Salmon", methods: "FSB", lures: "Worms under float, PowerBait, Mepps #2", times: "Early morning, late afternoon" },
+            { id: "L08", name: "The Groynes Ponds (Junior Only)", coords: [-43.45155169378508, 172.60667628037325], dist: "30", distRaw: 30, limit: "1 Sportsfish", season: "All Year (Juniors only)", fish: "Trout", methods: "FSB", lures: "PowerBait, Worms, Small Spinners", times: "Daylight hours (7 AM - 9 PM)" },
+            { id: "L09", name: "Lake Lyndon", coords: [-43.294101696941496, 171.71011095525492], dist: "75", distRaw: 75, limit: "2 Trouts", season: "All Year", fish: "Rainbow Trout", methods: "FSB", lures: "Glo-bugs, Woolly Buggers, Soft Plastics", times: "Evening rise during summer" },
+            { id: "L10", name: "Lake Coleridge", coords: [-43.34310097123875, 171.5474708279099], dist: "90", distRaw: 87, limit: "4 Sportsfish", season: "Nov 1 - Sep 30", fish: "Rainbow/Brown Trout, Salmon", methods: "FSB", lures: "Trolling lures, Lumo flies, Woolly Buggers", times: "Night fishing (darker the better)" },
+            { id: "L11", name: "Harts Creek", coords: [-43.797070972440345, 172.3433314329807], dist: "27", distRaw: 27, limit: "2 Trout", season: "Oct 1 - Apr 30", fish: "Trout", methods: "FSB", lures: "Silver Toby, Smelt Soft Baits", times: "Fishing at the mouth is good after dark" },
+            { id: "L12", name: "LII River", coords: [-43.709779265728805, 172.45021994503597], dist: "18", distRaw: 18, limit: "2 Trout", season: "Oct 1 - Apr 30", fish: "Trout", methods: "FSB", lures: "Silver Toby, Smelt Soft Baits", times: "Fishing at the mouth is good after dark" }
+        ];
+
+        // UI Management - Tab Switching Logic
+        function switchView(viewId, btnElement) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-blue-500', 'text-blue-500');
+            });
+            btnElement.classList.add('active');
+
+            // Update Views
+            document.querySelectorAll('.view-container').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+
+            // Leaflet requires invalidation if un-hidden to re-calculate canvas size
+            if (viewId === 'main-content') {
+                map.invalidateSize();
+            }
+        }
+
+        // Map setup
+        const map = L.map('map', { zoomControl: false }).setView(ROLLESTON_COORDS, 9);
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM' }).addTo(map);
+
+        const markerMap = {};
+
+        // Helper to find the 1st Saturday of November for the current (or relevant) year
+        const getFirstSaturdayOfNov = (year) => {
+            let d = new Date(year, 10, 1); // Nov 1
+            while (d.getDay() !== 6) { // 6 = Saturday
+                d.setDate(d.getDate() + 1);
+            }
+            return d.getDate();
+        };
+
+        const checkStatus = (seasonStr) => {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth(); 
+            const currentDate = now.getDate();
+
+            if (seasonStr.toLowerCase().includes("all year")) return true;
+
+            const months = { "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11 };
+            
+            // Handle multiple ranges (separated by ;)
+            const parts = seasonStr.split(';');
+            
+            for (let part of parts) {
+                const rangeMatch = part.match(/([A-Z][a-z]{2})\s+(\d+)\s*-\s*([A-Z][a-z]{2})\s+(\d+)/);
+                if (rangeMatch) {
+                    let startMonth = months[rangeMatch[1]];
+                    let startDay = parseInt(rangeMatch[2]);
+                    const endMonth = months[rangeMatch[3]];
+                    const endDay = parseInt(rangeMatch[4]);
+
+                    // Logic Override: If it's a High Country "Nov 1" start, calculate actual 1st Saturday
+                    if (startMonth === 10 && startDay === 1) {
+                        startDay = getFirstSaturdayOfNov(currentYear);
+                    }
+
+                    // Standard wrap-around year check
+                    let isOpen = false;
+                    if (startMonth < endMonth || (startMonth === endMonth && startDay <= endDay)) {
+                        isOpen = (currentMonth > startMonth && currentMonth < endMonth) ||
+                                 (currentMonth === startMonth && currentDate >= startDay) ||
+                                 (currentMonth === endMonth && currentDate <= endDay);
+                    } else {
+                        isOpen = (currentMonth > startMonth || currentMonth < endMonth) ||
+                                 (currentMonth === startMonth && currentDate >= startDay) ||
+                                 (currentMonth === endMonth && currentDate <= endDay);
+                    }
+                    if (isOpen) return true;
+                }
+            }
+            return false;
+        };
+
+        const homeIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color:#1e293b; width:14px; height:14px; border-radius:50%; border:2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+        });
+        L.marker(ROLLESTON_COORDS, { icon: homeIcon, zIndexOffset: 1000 }).bindTooltip("<b>Rolleston</b>").addTo(map);
+
+        const listContainer = document.getElementById('location-list');
+        locations.sort((a, b) => a.distRaw - b.distRaw).forEach(loc => {
+            const isOpen = checkStatus(loc.season);
+            const statusColor = isOpen ? '#22c55e' : '#ef4444';
+            const statusText = isOpen ? 'OPEN' : 'CLOSED';
+            const statusClass = isOpen ? 'text-green-600' : 'text-red-600';
+
+            const popupHTML = `
+                <div class="mb-2 border-b border-slate-200 pb-2 flex justify-between items-start gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 m-0">${loc.name}</h3>
+                        <div class="text-xs text-slate-500">${loc.dist} km from Rolleston</div>
+                    </div>
+                    <div class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 ${statusClass}">${statusText}</div>
+                </div>
+                <div class="data-grid">
+                    <div class="data-label">Season</div><div class="data-value">${loc.season}</div>
+                    <div class="data-label">Limit</div><div class="data-value">${loc.limit}</div>
+                    <div class="data-label">Fish</div><div class="data-value">${loc.fish}</div>
+                    <div class="data-label">Methods</div><div class="data-value">${loc.methods}</div>
+                    <div class="data-label">Lures</div><div class="data-value">${loc.lures}</div>
+                    <div class="data-label">Prime Time</div><div class="data-value">${loc.times}</div>
+                </div>`;
+
+            const locIcon = L.divIcon({
+                className: 'custom-location-icon',
+                html: `<div style="background-color:${statusColor}; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [16, 16], iconAnchor: [8, 8]
+            });
+
+            const marker = L.marker(loc.coords, { icon: locIcon }).addTo(map).bindPopup(popupHTML);
+            markerMap[loc.id] = marker;
+
+            const row = document.createElement('div');
+            row.className = 'location-row p-4 flex justify-between items-center';
+            row.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full shrink-0" style="background-color:${statusColor}"></div>
+                    <div>
+                        <div class="font-semibold text-slate-800 text-sm">${loc.name}</div>
+                        <div class="text-xs text-slate-500 truncate w-40">${loc.fish}</div>
+                    </div>
+                </div>
+                <div class="text-sm font-mono text-slate-600 bg-slate-100 px-2 py-1 rounded">${loc.dist} km</div>`;
+            
+            row.addEventListener('click', () => {
+                document.querySelectorAll('.location-row').forEach(r => r.classList.remove('active'));
+                row.classList.add('active');
+                map.setView(loc.coords, 12, { animate: true });
+                marker.openPopup();
+            });
+
+            marker.on('popupopen', () => {
+                document.querySelectorAll('.location-row').forEach(r => r.classList.remove('active'));
+                row.classList.add('active');
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+
+            listContainer.appendChild(row);
+        });
+
+        const group = new L.featureGroup(Object.values(markerMap));
+        map.fitBounds(group.getBounds().extend(ROLLESTON_COORDS), { padding: [30, 30] });
+    </script>
+</body>
+</html>
