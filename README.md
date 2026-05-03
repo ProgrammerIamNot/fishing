@@ -35,7 +35,7 @@ cd rolleston-angling-map
 
 Data Management
 
-All spatial and regulatory data is stored in memory within the locations array inside the <script> tag of index.html.
+All spatial and regulatory data is stored in `locations.js`.
 
 To append a new location, insert a new object into the array using the established schema:
 
