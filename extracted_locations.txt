@@ -1,0 +1,72 @@
+# Extracted Fishing Regulations Summary (2025/2026)
+
+This file contains extracted tabular data from the North Canterbury and Central South Island regulation PDFs. Use this as a reference for expanding the location list in the app.
+
+---
+
+## NORTH CANTERBURY REGION
+
+| Water | Section | Open Season | Limit (Trout/Salmon) |
+|-------|---------|-------------|----------------------|
+| Ada River | Part of Waiau Uwha | 1 Oct - 30 Apr | 1 Trout |
+| Ashley River | Upstream of Ashley Gorge Rd | 1 Oct - 30 Apr | 1 Trout |
+| Ashley River | Downstream of Ashley Gorge Rd | Trout: All Year; Salmon: 1 Oct - 30 Apr | 2 Trout |
+| Avon River | Upstream of Armagh St Bridge | 1 Oct - 30 Apr | 2 Trout |
+| Avon River | Downstream of Barbadoes St Bridge | Trout: All Year; Salmon: 1 Oct - 30 Apr | 2 Trout |
+| Boyle River | Part of Lewis Pass | 1 Oct - 30 Apr | 1 Trout |
+| Broken River | | 1st Sat Nov - 31 May | 1 Trout |
+| Cam River | | Trout: 1 Oct - 30 Apr; Salmon: 1 Oct - 30 Apr | 2 Trout |
+| Christchurch Groynes | Four ponds (designated) | All Year | 1 Sports fish |
+| Lake Coleridge | | 1st Sat Nov - 30 Sep | 4 Sports fish |
+| Lake Ellesmere | | All Year | 2 Trout |
+| Lake Forsyth | | All Year | 2 Trout |
+| Lake Lyndon | | All Year | 2 Trout |
+| Lake Pearson | | All Year | 2 Trout |
+| Lake Sumner | | All Year | 2 Trout |
+| Lake Taylor | | All Year | 2 Trout |
+| Rakaia River | Upstream of Coleridge Tailrace | 1 Oct - 31 Mar | 2 Trout |
+| Rakaia River | Downstream of Coleridge Tailrace | Trout: All Year; Salmon: 1 Oct - 30 Apr | 2 Trout |
+| Selwyn River | Upstream of SH77 Bridge | 1 Oct - 30 Apr | 1 Trout |
+| Selwyn River | Downstream of SH77 Bridge | All Year | 2 Trout |
+| Waimakariri River | Upstream of Staircase Gully | 1 Oct - 30 Apr | 2 Trout |
+| Waimakariri River | Downstream of Staircase Gully | Trout: All Year; Salmon: 1 Oct - 30 Apr | 2 Trout |
+
+---
+
+## CENTRAL SOUTH ISLAND REGION
+
+| Water | Section | Open Season | Limit (Trout/Salmon) |
+|-------|---------|-------------|----------------------|
+| Ahuriri River | Upstream of Longslip Creek | 1st Sat Nov - 30 Apr | 2 Trout |
+| Ahuriri River | Downstream of Longslip Creek | 1st Sat Nov - 30 Apr | 4 Trout |
+| Ashburton River | North/South branches upstream | 1 Oct - 30 Apr | 2 Trout |
+| Ashburton River | Downstream of Taylors Stream | 1 Oct - 30 Apr | 4 Trout |
+| Lake Aviemore | | All Year | 4 Sports fish |
+| Lake Benmore | | All Year | 4 Sports fish |
+| Lake Heron | | 1st Sat Nov - 30 Apr | 4 Sports fish |
+| Lake Ohau | | All Year | 4 Sports fish |
+| Lake Opuha | | 1 Oct - 30 Apr & 1 Jun - 30 Aug | 4 Trout |
+| Lake Pukaki | | All Year | 4 Sports fish |
+| Lake Ruataniwha | | All Year | 2 Sports fish |
+| Lake Tekapo | | All Year | 6 Total (max 4 Trout/Salmon) |
+| Ohau Canal | | All Year | 2 Sports fish |
+| Pukaki-Ohau A Canal | | All Year | 2 Sports fish |
+| Tekapo Canal | | All Year (mostly) | 2 Sports fish |
+| Waitaki River | Downstream of power lines | 1 Oct - 30 Apr | 4 Trout |
+| Rangitata River | Upstream of Turn Again Point | 1 Oct - 31 Mar | 2 Trout |
+| Rangitata River | Downstream of Turn Again Point | 1 Oct - 30 Apr | 2 Trout |
+
+---
+
+**Note:** This is a condensed summary. Always refer to the full PDFs in the `docs/` folder for specific notes (lures, methods, and designated water requirements).
+
+
+
+
+    { id: "L24", name: "Lake Benmore", coords: [-44.3355, 170.1822], dist: "245", distRaw: 245, limit: "4 Sportsfish", season: "All Year", fish: "Brown/Rainbow Trout, Salmon", methods: "FSB", lures: "Trolling lures, Soft Plastics", times: "All day" },
+    { id: "L25", name: "Lake Ohau", coords: [-44.2355, 169.8522], dist: "260", distRaw: 260, limit: "4 Sportsfish", season: "All Year", fish: "Brown/Rainbow Trout", methods: "FSB", lures: "Spinners, Dry Flies", times: "Early morning" },
+    { id: "L26", name: "Ohau Canal", coords: [-44.2655, 170.0822], dist: "255", distRaw: 255, limit: "2 Sportsfish", season: "All Year", fish: "Large Rainbow/Brown Trout", methods: "FSB", lures: "Egg patterns (Glo-bugs), Soft Plastics", times: "Near farm cages" },
+    { id: "L27", name: "Tekapo Canal", coords: [-44.0555, 170.4722], dist: "220", distRaw: 220, limit: "2 Sportsfish", season: "All Year", fish: "Monster Rainbow/Brown Trout", methods: "FSB", lures: "Shrimp imitations, Glo-bugs", times: "Flowing water periods" },
+    { id: "L28", name: "Waitaki River (Dam)", coords: [-44.7555, 170.4222], dist: "250", distRaw: 250, limit: "4 Trout", season: "Oct 1 - Apr 30", fish: "Brown/Rainbow Trout", methods: "FSB", lures: "Large Spinners, Soft Plastics", times: "Varying flows" },
+    { id: "L29", name: "Ahuriri River (Lower)", coords: [-44.5455, 170.0422], dist: "265", distRaw: 265, limit: "4 Trout", season: "1st Sat Nov - 30 Apr", fish: "Brown/Rainbow Trout", methods: "FS", lures: "Dry Flies (Cicadas in summer)", times: "Bright sunny days" },
+

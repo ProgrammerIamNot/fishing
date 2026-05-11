@@ -512,19 +512,33 @@
             const parts = seasonStr.split(';');
             
             for (let part of parts) {
-                const rangeMatch = part.match(/([A-Z][a-z]{2})\s+(\d+)\s*-\s*([A-Z][a-z]{2})\s+(\d+)/);
-                if (rangeMatch) {
-                    let startMonth = months[rangeMatch[1]];
-                    let startDay = parseInt(rangeMatch[2]);
-                    const endMonth = months[rangeMatch[3]];
-                    const endDay = parseInt(rangeMatch[4]);
+                let startMonth, startDay, endMonth, endDay;
 
-                    // Logic Override: If it's a High Country "Nov 1" start, calculate actual 1st Saturday
-                    if (startMonth === 10 && startDay === 1) {
-                        startDay = getFirstSaturdayOfNov(currentYear);
+                // New Logic: Support "1st Sat Nov" explicitly
+                if (part.includes("1st Sat Nov")) {
+                    startMonth = 10; // Nov
+                    startDay = getFirstSaturdayOfNov(currentYear);
+                    const endMatch = part.match(/-\s*([A-Z][a-z]{2})\s+(\d+)/);
+                    if (endMatch) {
+                        endMonth = months[endMatch[1]];
+                        endDay = parseInt(endMatch[2]);
                     }
+                } else {
+                    const rangeMatch = part.match(/([A-Z][a-z]{2})\s+(\d+)\s*-\s*([A-Z][a-z]{2})\s+(\d+)/);
+                    if (rangeMatch) {
+                        startMonth = months[rangeMatch[1]];
+                        startDay = parseInt(rangeMatch[2]);
+                        endMonth = months[rangeMatch[3]];
+                        endDay = parseInt(rangeMatch[4]);
 
-                    // Standard wrap-around year check
+                        // Backward compatibility: If it's a "Nov 1" start, treat as 1st Sat
+                        if (startMonth === 10 && startDay === 1) {
+                            startDay = getFirstSaturdayOfNov(currentYear);
+                        }
+                    }
+                }
+
+                if (startMonth !== undefined && endMonth !== undefined) {
                     let isOpen = false;
                     if (startMonth < endMonth || (startMonth === endMonth && startDay <= endDay)) {
                         isOpen = (currentMonth > startMonth && currentMonth < endMonth) ||
