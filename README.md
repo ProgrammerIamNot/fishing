@@ -1,59 +1,50 @@
-Rolleston Angling Strategic Map
+# Angling Intelligence: Rolleston Base
 
-A lightweight, zero-build single-page application (SPA) providing geospatial intelligence, regulatory constraints, and tactical reference data for angling in the North Canterbury region, centered around Rolleston, NZ.
+A specialized web application designed for anglers based in Rolleston, New Zealand, providing a strategic reference for freshwater fishing across the North Canterbury and Central South Island regions.
 
-Architecture
+## Purpose
+The primary goal of this project is to consolidate essential angling data into a single, mobile-responsive dashboard. It simplifies trip planning by calculating travel distances from a Rolleston base and providing quick access to seasonal status, species identification, and tactical rigging techniques.
 
-This project is designed as a standalone static application requiring no backend infrastructure or build pipelines.
+> ### ⚠️ Disclaimer
+> The information provided in this application is populated to the best of the developer's abilities and knowledge. However, fishing regulations are subject to change and interpretation. **This page is for reference only.** Every angler MUST consult the official National and Local Fish & Game regulations before heading out. The developer takes no responsibility for any inaccuracies or regulatory breaches resulting from the use of this tool.
 
-Core Logic: Vanilla JavaScript (ES6+).
+---
 
-Geospatial Rendering: Leaflet.js native canvas rendering.
+## Functionality
 
-Styling: Tailwind CSS via CDN for rapid utility-class UI generation.
+### 📍 Strategic Map
+*   **Distance Calculation:** All locations are sorted by their driving distance from Rolleston.
+*   **Real-Time Status:** Sites are automatically flagged as **OPEN** or **CLOSED** based on the current date and specific regional season dates (including complex "First Saturday of November" high-country starts).
+*   **Interactive Filtering:** Toggle visibility of open/closed sites to focus on available targets.
+*   **Detailed Intel:** Click any location to see bag limits, permitted methods, recommended lures, and "prime time" tips.
 
-Hosting: Configured for highly available, zero-cost deployment via GitHub Pages.
+### 📜 Regulations
+*   Integrated PDF viewers for official Fish & Game regulation booklets.
+*   Quick-switch tabs for North Canterbury and Central South Island regions.
 
-Core Capabilities
+### 🐟 Species ID
+*   A visual guide to target species in the region, including Brown Trout, Rainbow Trout, Chinook Salmon, Perch, and Tench.
+*   Provides identification markers, habitat notes, and suggested lures for each species.
 
-Strategic Map: Interactive spatial mapping of primary fishing targets relative to Rolleston.
+### 🪢 Tactical Knots
+*   High-quality visual diagrams and step-by-step instructions for essential angling connections.
+*   Covers terminal tackle (Palomar, Snell), line-to-line (Double Uni, Blood Knot, FG), and loop creation (Surgeon's Loop).
 
-Dynamic Status Engine: Real-time evaluation of "Open" or "Closed" season status. The engine parses complex string rules (e.g., cross-year wraps, High Country 1st-Saturday-of-November overrides) against the user's current system clock.
+### 🔗 Useful Links
+*   A curated list of external resources, including access point maps, licensing portals, and regional information.
 
-Species Identification Matrix: Visual and behavioral data for target species, including bite kinematics and suggested lures.
+---
 
-Tactical Knots: Structural diagrams and step-by-step methodologies for terminal tackle and line-to-line connections.
+## Technical Details
 
-Local Execution
+### Tech Stack
+*   **Frontend:** HTML5, CSS3 (Tailwind CSS)
+*   **Mapping:** [Leaflet.js](https://leafletjs.com/) with OpenStreetMap tiles.
+*   **Data:** Vanilla JavaScript data structures for locations and resources.
+*   **Hosting:** Designed to run in any modern web browser; works locally via `file://` or hosted on any static web server.
 
-No local server is strictly required. Clone the repository and open index.html directly in any modern web browser.
+### License & Usage
+This repository is **public** and available for anyone to clone, modify, and reuse for their own personal or community projects.
 
-git clone [https://github.com/YOUR_USERNAME/rolleston-angling-map.git](https://github.com/YOUR_USERNAME/rolleston-angling-map.git)
-cd rolleston-angling-map
-# Open index.html in your browser
-
-
-Data Management
-
-All spatial and regulatory data is stored in `locations.js`.
-
-To append a new location, insert a new object into the array using the established schema:
-
-{ 
-  id: "L13", 
-  name: "New Location", 
-  coords: [-43.1234, 172.5678], // [Latitude, Longitude]
-  dist: "15", 
-  distRaw: 15, // Used for ascending distance sort
-  limit: "2 Trout", 
-  season: "Oct 1 - Apr 30", // Use 3-letter month abbreviations
-  fish: "Brown Trout", 
-  methods: "FS", 
-  lures: "Spinners", 
-  times: "Evening" 
-}
-
-
-Asset Structure
-
-Static image assets for Species ID and Knot diagrams should be placed in the /images/ directory. The DOM expects relative paths (e.g., ./images/brown_trout.jpg). Ensure filenames match exactly to prevent 404 errors during client-side rendering.
+**No Warranty:**
+The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
